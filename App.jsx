@@ -1,38 +1,26 @@
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import Die from "./Die"
 import { nanoid } from "nanoid"
 import Confetti from "react-confetti"
 
 export default function App() {
     const [dice, setDice] = useState(() => generateAllNewDice())
-    
-    /**
-     * Challenge:
-     * Make it so when the game is over, the "New Game" button
-     * automatically receives keyboard focus so keyboard users
-     * can easily trigger that button without having to tab
-     * through all the dice first.
-     * 
-     * Hints:
-     * 1. Focusing a DOM element with the DOMNode.focus() method
-     *    requires accessing the native DOM node. What tool have
-     *    we learned about that allows us to do that?
-     * 
-     * 2. Automatically calling the .focus() on a DOM element when
-     *    the game is won requires us to synchronize the local
-     *    `gameWon` variable with an external system (the DOM). What
-     *    tool have we learned about that allows us to do that?
-     */
+    const buttonRef = useRef(null)
 
     const gameWon = dice.every(die => die.isHeld) &&
         dice.every(die => die.value === dice[0].value)
+        
+    useEffect(() => {
+        if (gameWon) {
+            buttonRef.current.focus()
+        }
+    }, [gameWon])
 
     function generateAllNewDice() {
         return new Array(10)
             .fill(0)
             .map(() => ({
-                // value: Math.ceil(Math.random() * 6),
-                value: 5,
+                value: Math.ceil(Math.random() * 6),
                 isHeld: false,
                 id: nanoid()
             }))
@@ -78,7 +66,7 @@ export default function App() {
             <div className="dice-container">
                 {diceElements}
             </div>
-            <button className="roll-dice" onClick={rollDice}>
+            <button ref={buttonRef} className="roll-dice" onClick={rollDice}>
                 {gameWon ? "New Game" : "Roll"}
             </button>
         </main>
